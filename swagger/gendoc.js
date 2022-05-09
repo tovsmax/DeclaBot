@@ -1,9 +1,5 @@
-import fs from "fs"
-import { fileURLToPath } from "url"
-import { dirname, join } from "path"
 import swaggerAutogen from "swagger-autogen"
 
-const __dirname = dirname(fileURLToPath(import.meta.url))
 const doc = {
   info: {
     title: "DeclaBot",
@@ -23,9 +19,8 @@ const doc = {
   },
 }
 
-const outputFile = join(__dirname, "/output.json")
-const endpointsFiles = [join(__dirname, "../server/server.js")]
-
+const outputFile = "./swagger/output.json"
+const endpointsFiles = ["./server/server.js"]
 swaggerAutogen()(outputFile, endpointsFiles, doc).then(async () => {
   if (process.argv[2] !== "--skip") {
     await import("../server/server.js")
