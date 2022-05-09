@@ -1,0 +1,10 @@
+{
+  "editor.tabSize": 2,
+  "editor.suggest.snippetsPreventQuickSuggestions": false,
+  "editor.quickSuggestions": {
+    "other": "on",
+    "comments": "on",
+    "strings": "on"
+  },
+  "git.autofetch": true,
+}
