@@ -3,7 +3,7 @@ const newButton = document.getElementById("newButton")
 const newButton2 = document.getElementById("newButton2")
 const massage = document.getElementById("massage")
 function asd() {
-  fetch("https://declabot.loca.lt//docs")
+  fetch("http://localhost:3000/docs")
     .then((response) => {
       return response.json()
     })
@@ -12,7 +12,7 @@ function asd() {
     })
 }
 function asd2() {
-  fetch("https://declabot.loca.lt//docs", {
+  fetch("http://localhost:3000/docs", {
     method: "POST",
     body: JSON.stringify({ type: "dsgfhs", content: "hhhhhhhhh" }),
     headers: {
