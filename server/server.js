@@ -25,10 +25,30 @@ ser.use("/api-doc", swaggerUi.serve, swaggerUi.setup(swaggerFile))
 ser.use("/declarations", declRouter)
 ser.use("/docs", docRouter)
 
-ser.listen(port, () => {
+let tunnel
+let declabot
+const server = ser.listen(port, async () => {
+  tunnel = await localtunnel(port, { subdomain: "declabot" })
+  console.log("Https redirect:", tunnel.url)
+  declabot = bot("5329580924:AAFsd2Itl-F4PDxgOOLtwkGNzCbTst1CvH0", tunnel.url)
   console.log(`Server listening on ${port}!`)
 })
-localtunnel(port, { subdomain: "declabot" }).then((tunnel) => {
-  console.log("Https redirect:", tunnel.url)
-  bot("5329580924:AAFsd2Itl-F4PDxgOOLtwkGNzCbTst1CvH0", tunnel.url)
-})
+
+function stopServer() {
+  if (declabot) {
+    console.log('Server closed');
+    // declabot.stop()
+    // tunnel.close()
+  } else {
+    throw 'declabot do not exists'
+  }
+}
+
+// process.once('SIGINT', stopServer)
+// process.once('SIGTERM', stopServer)
+
+
+// server.close(() => {
+//   declabot.stop()
+//   tunnel.close()
+// })
