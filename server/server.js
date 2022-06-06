@@ -29,26 +29,12 @@ let tunnel
 let declabot
 const server = ser.listen(port, async () => {
   tunnel = await localtunnel(port, { subdomain: "declabot" })
-  console.log("Https redirect:", tunnel.url)
+  tunnel.on('close', () => {
+    tunnel.close()
+  })
   declabot = bot(tunnel.url)
+  
+  console.log("Http url:", "http://localhost:3000")
+  console.log("Https redirect:", tunnel.url)
   console.log(`Server listening on ${port}!`)
 })
-
-function stopServer() {
-  if (declabot) {
-    console.log('Server closed');
-    // declabot.stop()
-    // tunnel.close()
-  } else {
-    throw 'declabot do not exists'
-  }
-}
-
-// process.once('SIGINT', stopServer)
-// process.once('SIGTERM', stopServer)
-
-
-// server.close(() => {
-//   declabot.stop()
-//   tunnel.close()
-// })
