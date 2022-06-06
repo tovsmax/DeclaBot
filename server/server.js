@@ -30,7 +30,7 @@ let declabot
 const server = ser.listen(port, async () => {
   tunnel = await localtunnel(port, { subdomain: "declabot" })
   console.log("Https redirect:", tunnel.url)
-  declabot = bot("5329580924:AAFsd2Itl-F4PDxgOOLtwkGNzCbTst1CvH0", tunnel.url)
+  declabot = bot(tunnel.url)
   console.log(`Server listening on ${port}!`)
 })
 
