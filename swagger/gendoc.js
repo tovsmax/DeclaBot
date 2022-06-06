@@ -3,7 +3,8 @@ import swaggerAutogen from "swagger-autogen"
 const doc = {
   info: {
     title: "DeclaBot",
-    description: "TBD",
+    description: "WIP",
+    version: "0.1.0"
   },
   host: "localhost:3000",
   schemes: ["http"],
