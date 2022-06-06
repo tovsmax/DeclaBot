@@ -9,6 +9,7 @@ import { readFileSync } from "fs"
 
 import declRouter from "./routes/decls.routes.js"
 import docRouter from "./routes/docs.routes.js"
+import fileTransRouter from "./routes/fileTransfering.routes.js"
 import bot from "./bot.js"
 
 const ser = express()
@@ -24,6 +25,7 @@ ser.use("/api-doc", swaggerUi.serve, swaggerUi.setup(swaggerFile))
 
 ser.use("/declarations", declRouter)
 ser.use("/docs", docRouter)
+ser.use('/upload', fileTransRouter)
 
 let tunnel
 let declabot
