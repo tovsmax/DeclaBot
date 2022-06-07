@@ -11,9 +11,17 @@ import declRouter from "./routes/decls.routes.js"
 import docRouter from "./routes/docs.routes.js"
 import fileTransRouter from "./routes/fileTransfering.routes.js"
 import bot from "./bot.js"
+import { corsAllowOrigin } from "./cors.js"
 
 const ser = express()
 const port = 3000
+
+const allowedOrigins = [
+  'https://declabot.loca.lt',
+  `http://127.0.0.1:${port}`
+]
+
+corsAllowOrigin(ser, allowedOrigins)
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 ser.use("/", express.static(join(__dirname, "../client")))
