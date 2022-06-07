@@ -1,7 +1,7 @@
 import express from "express"
 import localtunnel from "localtunnel"
 
-import { dirname, join, resolve } from "path"
+import path, { dirname, join, resolve } from "path"
 import { fileURLToPath } from "url"
 
 import swaggerUi from "swagger-ui-express"
@@ -23,11 +23,11 @@ const allowedOrigins = [
 
 corsAllowOrigin(ser, allowedOrigins)
 
-const __dirname = dirname(fileURLToPath(import.meta.url))
-ser.use("/", express.static(join(__dirname, "../client")))
+const __dirname = path.resolve()
+ser.use("/", express.static(path.resolve(__dirname, "client")))
 
 const swaggerFile = JSON.parse(
-  readFileSync(resolve(__dirname, "../swagger/output.json"))
+  readFileSync(path.resolve(__dirname, "swagger", "output.json"))
 )
 ser.use("/api-doc", swaggerUi.serve, swaggerUi.setup(swaggerFile))
 
@@ -44,7 +44,8 @@ const server = ser.listen(port, async () => {
   })
   declabot = bot(tunnel.url)
   
+  console.log(`Server listening on ${port}!`)
   console.log("Http url:", "http://localhost:3000")
   console.log("Https redirect:", tunnel.url)
-  console.log(`Server listening on ${port}!`)
+  console.log("API Documentation:", `${tunnel.url}/api-doc`)
 })
