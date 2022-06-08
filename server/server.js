@@ -10,8 +10,8 @@ import { readFileSync } from "fs"
 import declRouter from "./routes/decls.routes.js"
 import docRouter from "./routes/docs.routes.js"
 import fileTransRouter from "./routes/fileTransfering.routes.js"
-import bot from "./bot.js"
 import { corsAllowOrigin } from "./cors.js"
+import createBot from "./bot.js"
 
 const ser = express()
 const port = 3000
@@ -42,7 +42,7 @@ const server = ser.listen(port, async () => {
   tunnel.on('close', () => {
     tunnel.close()
   })
-  declabot = bot(tunnel.url)
+  declabot = createBot(tunnel.url)
   
   console.log(`Server listening on ${port}!`)
   console.log("Http url:", "http://localhost:3000")
