@@ -1,8 +1,7 @@
 import TelegramBot from "node-telegram-bot-api";
-import finiteStateMachineBot from "./finiteStateMachineBot.js";
+import FiniteStateMachineBot from "./finiteStateMachineBot.js";
 
 const TOKEN = "5329580924:AAFsd2Itl-F4PDxgOOLtwkGNzCbTst1CvH0"
-
 
 export default function createBot(pageUrl) {
   // bot.setChatMenuButton({
@@ -16,7 +15,7 @@ export default function createBot(pageUrl) {
   // })
   
   const TelBot = new TelegramBot(TOKEN, {polling: true})
-  const fsmBot = new finiteStateMachineBot(TelBot)
+  const fsmBot = new FiniteStateMachineBot(TelBot)
 
   TelBot.onText(/\/start/, msg => {
     if (fsmBot.checkState('none')) {
@@ -34,6 +33,11 @@ export default function createBot(pageUrl) {
   TelBot.on('callback_query', query => {
     if (fsmBot.checkState('pendingAnswer')) {
       fsmBot.savePhoto(query.message.chat.id, query.data)
+      TelBot.editMessageReplyMarkup(null, {
+        chat_id: query.message.chat.id,
+        message_id: query.message.message_id
+      })
+      TelBot.deleteMessage(query.message.chat.id, query.message.message_id)
     }
   })
 }

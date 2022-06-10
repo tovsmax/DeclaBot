@@ -5,7 +5,7 @@ import TelegramBot from "node-telegram-bot-api";
 /**
  * Часть Declabot, связання с конечными автоматами
  */
-export default class finiteStateMachineBot {
+export default class FiniteStateMachineBot {
   /**
    * 
    * @param {TelegramBot} TelBot 
@@ -77,7 +77,7 @@ export default class finiteStateMachineBot {
     } else if (answer == 'denyPhoto') {
       this.TelBot.sendMessage(chatId, 'Охрана, отмена')
     } else {
-      this.TelBot.sendMessage()
+      this.TelBot.sendMessage('Error')
     }
 
     this.savePhotoId = null
