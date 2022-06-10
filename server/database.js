@@ -1,37 +1,19 @@
-const docs = [
-  {
-    id: 1,
-    docType: "receipt",
-    content: "bla",
-  },
-  {
-    id: 2,
-    docType: "studInfo",
-    content: "blabla",
-  },
-  {
-    id: 3,
-    docType: "contract",
-    content: "albalb",
-  },
-]
+import { readFileSync } from "fs"
+import path from "path"
 
-const declarations = [
-  {
-    id: 100,
-    doclType: "mainWork",
-    money: 1001,
-  },
-  {
-    id: 101,
-    doclType: "offWork",
-    money: 1488,
-  },
-  {
-    id: 102,
-    doclType: "studyCashback",
-    money: 6969,
-  },
-]
+/**
+ * @typedef {Object} BotChat
+ * @property {number} chatId
+ * @property {import("./finiteStateMachineBot").State} curState
+ * @property {string} savePhotoId
+ */
 
-export { declarations, docs }
+/**
+ * @type {BotChat[]}
+ */
+const botChats = readFileSync(path.resolve('server', 'database', 'botChats.json'))
+
+const declarations = readFileSync(path.resolve('server', 'database', 'declarations.json'))
+const docs = readFileSync(path.resolve('server', 'database', 'docs.json'))
+
+export { declarations, docs, botChats }

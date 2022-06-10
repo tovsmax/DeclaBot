@@ -1,0 +1,17 @@
+[
+  {
+    "id": 1,
+    "docType": "receipt",
+    "content": "bla"
+  },
+  {
+    "id": 2,
+    "docType": "studInfo",
+    "content": "blabla"
+  },
+  {
+    "id": 3,
+    "docType": "contract",
+    "content": "albalb"
+  }
+]

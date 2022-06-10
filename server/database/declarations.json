@@ -1,0 +1,17 @@
+[
+  {
+    "id": 100,
+    "doclType": "mainWork",
+    "money": 1001
+  },
+  {
+    "id": 101,
+    "doclType": "offWork",
+    "money": 1488
+  },
+  {
+    "id": 102,
+    "doclType": "studyCashback",
+    "money": 6969
+  }
+]

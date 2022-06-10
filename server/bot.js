@@ -1,5 +1,6 @@
 import TelegramBot from "node-telegram-bot-api";
 import FiniteStateMachineBot from "./finiteStateMachineBot.js";
+import { botChats } from "./database.js";
 
 const TOKEN = "5329580924:AAFsd2Itl-F4PDxgOOLtwkGNzCbTst1CvH0"
 
@@ -15,10 +16,22 @@ export default function createBot(pageUrl) {
   // })
   
   const TelBot = new TelegramBot(TOKEN, {polling: true})
-  const fsmBot = new FiniteStateMachineBot(TelBot)
+  let fsmBot
+  if (botOptions) {
+    fsmBot = new FiniteStateMachineBot(TelBot, botOptions)
+    fsmBot.start(msg.chat.id)
+  }
+
 
   TelBot.onText(/\/start/, msg => {
-    if (fsmBot.checkState('none')) {
+    const chatId = msg.chat.id
+    let botOptions = botChats.find(botChat => botChat.chatId == chatId)
+    if (!botOptions) {
+      botOptions = {
+        chatId: chatId
+      }
+      botChats.push(botOptions)
+      fsmBot = new FiniteStateMachineBot(TelBot, botOptions)
       fsmBot.start(msg.chat.id)
     }
   })
