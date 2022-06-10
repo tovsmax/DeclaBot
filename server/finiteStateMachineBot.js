@@ -1,5 +1,4 @@
 import TelegramBot from "node-telegram-bot-api";
-import { botChats } from "./database";
 
 /** @typedef {('none'|'pendingPhoto'|'pendingAnswer')} State */
 
@@ -10,31 +9,16 @@ export default class FiniteStateMachineBot {
   /**
    * 
    * @param {TelegramBot} TelBot 
-   * @param {import("./database").BotChat} options
    */
-  constructor(TelBot, options) {
-    this.TelBot = TelBot
-    this.chatId = chatId
-
+  constructor(TelBot) {
     /** @type {State} */
-    this.curState = options.curState || "none"
-    this.savePhotoId = options.savePhotoId || null
-  }
-
-  /** @param {State} state */
-  set curState(state) {
-    this.curState = state
-    botChats[this.chatId] = state
-  }
-
-  /** @param {string} savePhotoId */
-  set savePhotoId(photoId) {
-    this.savePhotoId = photoId
-    botChats[this.savePhotoId] = photoId
+    this.curState = "none"
+    this.savePhotoId = null
+    this.TelBot = TelBot
   }
 
   /**
-   * Проверка соответствия текущему состоянию бота
+   * Проверить, соответствует ли переданное состояние текущему состоянию бота
    * @param {State} state 
    */
   checkState(state) {
@@ -46,7 +30,7 @@ export default class FiniteStateMachineBot {
 
   /**
    * 
-   * @param {number} chatId 
+   * @param {Number} chatId 
    */
   start(chatId) {
     this.curState = "pendingPhoto"
@@ -55,8 +39,8 @@ export default class FiniteStateMachineBot {
 
   /**
    * 
-   * @param {number} chatId
-   * @param {string} photoId 
+   * @param {Number} chatId
+   * @param {String} photoId 
    */
   ask(chatId, photoId) {
     this.savePhotoId = photoId
@@ -83,7 +67,7 @@ export default class FiniteStateMachineBot {
 
   /**
    * 
-   * @param {number} chatId
+   * @param {Number} chatId
    * @param {'savePhoto'|'denyPhoto'} answer 
    */
   savePhoto(chatId, answer) {
