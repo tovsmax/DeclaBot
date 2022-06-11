@@ -16,7 +16,7 @@
     "nodemon": "^2.0.16"
   },
   "scripts": {
-    "check-processes": "netstat -ano | findstr :3000",
+    "check": "netstat -ano | findstr :3000",
     "gendoc": "node swagger/gendoc --skip",
     "dev-gendoc": "nodemon --ignore swagger/output.json swagger/gendoc",
     "dev": "nodemon server/server",
