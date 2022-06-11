@@ -1,6 +1,6 @@
 import TelegramBot from "node-telegram-bot-api";
 
-/** @typedef {('none'|'pendingPhoto'|'pendingAnswer')} State */
+/** @typedef {('none'|'pendingFile'|'pendingAnswer')} State */
 
 /**
  * Часть Declabot, связання с конечными автоматами
@@ -13,7 +13,7 @@ export default class FiniteStateMachineBot {
   constructor(TelBot) {
     /** @type {State} */
     this.curState = "none"
-    this.savePhotoId = null
+    this.saveFileId = null
     this.TelBot = TelBot
   }
 
@@ -33,29 +33,33 @@ export default class FiniteStateMachineBot {
    * @param {Number} chatId 
    */
   start(chatId) {
-    this.curState = "pendingPhoto"
-    this.TelBot.sendMessage(chatId, "Жду фоток")
+    this.curState = "pendingFile"
+    this.TelBot.sendMessage(chatId, "Жду файла")
+  }
+
+  silentStart() {
+    this.curState = "pendingFile"
   }
 
   /**
    * 
    * @param {Number} chatId
-   * @param {String} photoId 
+   * @param {String} fileId 
    */
-  ask(chatId, photoId) {
-    this.savePhotoId = photoId
+  ask(chatId, fileId) {
+    this.saveFileId = fileId
     
-    this.TelBot.sendMessage(chatId, "Хотите сохранить фотку?", {
+    this.TelBot.sendMessage(chatId, "Хотите сохранить файл?", {
       reply_markup: {
         inline_keyboard: [
           [
             {
               text: 'Сохранить',
-              callback_data: 'savePhoto'
+              callback_data: 'saveFile'
             },
             {
               text: 'Отменить',
-              callback_data: 'denyPhoto'
+              callback_data: 'denyFile'
             }
           ]
         ]
@@ -68,19 +72,19 @@ export default class FiniteStateMachineBot {
   /**
    * 
    * @param {Number} chatId
-   * @param {'savePhoto'|'denyPhoto'} answer 
+   * @param {'saveFile'|'denyFile'} answer 
    */
-  savePhoto(chatId, answer) {
-    if (answer == 'savePhoto') {
-      this.TelBot.downloadFile(this.savePhotoId, 'uploads')
+  saveFile(chatId, answer) {
+    if (answer == 'saveFile') {
+      this.TelBot.downloadFile(this.saveFileId, 'uploads')
       this.TelBot.sendMessage(chatId, 'Сохранено')
-    } else if (answer == 'denyPhoto') {
+    } else if (answer == 'denyFile') {
       this.TelBot.sendMessage(chatId, 'Охрана, отмена')
     } else {
       this.TelBot.sendMessage('Error')
     }
 
-    this.savePhotoId = null
-    this.curState = "pendingPhoto"
+    this.saveFileId = null
+    this.curState = "pendingFile"
   }
 }
