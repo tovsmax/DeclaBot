@@ -1,21 +1,26 @@
+import axios from "axios";
 import TelegramBot from "node-telegram-bot-api";
 import FiniteStateMachineBot from "./finiteStateMachineBot.js";
 
-const TOKEN = "5329580924:AAFsd2Itl-F4PDxgOOLtwkGNzCbTst1CvH0"
+const TOKEN = "5414794708:AAEpXhEdLONRWN6fEw1lxNIlH7PsAL3j2e0"
 
-export default function createBot(pageUrl) {
-  // bot.setChatMenuButton({
-  //   menu_button: {
-  //     type: "web_app",
-  //     text: "kekos",
-  //     web_app: {
-  //       url: pageUrl,
-  //     }
-  //   }
-  // })
-  
+export default function createBot(pageUrl) {  
   const TelBot = new TelegramBot(TOKEN, {polling: true})
   const fsmBot = new FiniteStateMachineBot(TelBot)
+
+  axios.post(`https://api.telegram.org/bot${TOKEN}/setMyCommands`, {
+    commands: [
+      {
+        command: '/start',
+        description: 'Регистрация чата для бота.'
+      },
+      {
+        command: '/setup',
+        description: 'Настройка бота для работы с облаком.'
+      }
+    ]
+  })
+
 
   TelBot.onText(/\/start/, msg => {
     if (fsmBot.checkState('none')) {
