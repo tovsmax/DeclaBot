@@ -2,13 +2,12 @@ import axios from "axios";
 import TelegramBot from "node-telegram-bot-api";
 import FiniteStateMachineBot from "./finiteStateMachineBot.js";
 
-const TOKEN = "5414794708:AAEpXhEdLONRWN6fEw1lxNIlH7PsAL3j2e0"
-
-export default function createBot(pageUrl) {  
-  const TelBot = new TelegramBot(TOKEN, {polling: true})
+export default function createBot(pageUrl) {
+  const BOT_TOKEN = process.env.BOT_TOKEN
+  const TelBot = new TelegramBot(BOT_TOKEN, {polling: true})
   const fsmBot = new FiniteStateMachineBot(TelBot)
 
-  axios.post(`https://api.telegram.org/bot${TOKEN}/setMyCommands`, {
+  axios.post(`https://api.telegram.org/bot${BOT_TOKEN}/setMyCommands`, {
     commands: [
       {
         command: '/start',
