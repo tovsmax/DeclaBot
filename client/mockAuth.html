@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MockAuth</title>
+</head>
+<body>
+  <button onclick="auth()">Авторизоватся</button>
+  <p style="display: none;">Приложению даны права. Можете закрыть окно</p>
+  <script>
+    function auth() {
+      document.querySelector('button').style.display = 'none'
+      document.querySelector('p').style.display = 'initial'
+      fetch('https://declabot.loca.lt', {
+        method: 'post',
+        body: {
+          accessGranted: true
+        }
+      })
+    }
+  </script>
+</body>
+</html>

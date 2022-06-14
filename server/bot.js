@@ -40,6 +40,113 @@ export default function createBot(pageUrl) {
     }
   })
 
+  TelBot.onText(/\/setup/, msg => {
+    TelBot.sendMessage(msg.chat.id, 'Меню', {
+      reply_markup: {
+        inline_keyboard: [
+          [
+            {
+              text: 'Подключение облачного хранилища',
+              callback_data: 'menu.connectCloudStorage'
+            },
+            {
+              text: 'Закрыть меню',
+              callback_data: 'menu.close'
+            }
+          ]
+        ]
+      }
+    })
+  })
+
+  TelBot.on('callback_query', query => {
+    switch (query.data) {
+      case 'menu.connectCloudStorage':
+        TelBot.editMessageText('Какое хранилище хотите подключить?', {
+          chat_id: query.message.chat.id,
+          message_id: query.message.message_id,
+          reply_markup: {
+            inline_keyboard: [
+              [
+                {
+                  text: 'Google Drive',
+                  callback_data: 'connectCloudStorage.GoogleDrive'
+                },
+                {
+                  text: 'Microsoft OneDrive',
+                  callback_data: 'connectCloudStorage.OneDrive'
+                }
+              ]
+            ]
+          }
+        })
+        break
+      case 'connectCloudStorage.GoogleDrive':
+        TelBot.editMessageText('Нажмите на кнопку для авторизации', {
+          chat_id: query.message.chat.id,
+          message_id: query.message.message_id,
+          reply_markup: {
+            inline_keyboard: [
+              [
+                {
+                  text: 'Авторизоваться',
+                  url: 'https://declabot.loca.lt/mockAuth.html'
+                },
+                {
+                  text: 'Вернуться к меню',
+                  callback_data: 'menu'
+                }
+              ]
+            ]
+          }
+        })
+        break
+      case 'connectCloudStorage.OneDrive':
+        TelBot.editMessageText('Нажмите на кнопку для авторизации', {
+          chat_id: query.message.chat.id,
+          message_id: query.message.message_id,
+          reply_markup: {
+            inline_keyboard: [
+              [
+                {
+                  text: 'Авторизоваться',
+                  url: 'https://declabot.loca.lt/mockAuth.html'
+                },
+                {
+                  text: 'Вернуться к меню',
+                  callback_data: 'menu'
+                }
+              ]
+            ]
+          }
+        })
+        break
+      case 'menu':
+        TelBot.editMessageText('Меню', {
+          chat_id: query.message.chat.id,
+          message_id: query.message.message_id,
+          reply_markup: {
+            inline_keyboard: [
+              [
+                {
+                  text: 'Подключение облачного хранилища',
+                  callback_data: 'menu.connectCloudStorage'
+                },
+                {
+                  text: 'Закрыть меню',
+                  callback_data: 'menu.close'
+                }
+              ]
+            ]
+          }
+        })
+        break
+      case 'menu.close':
+        TelBot.deleteMessage(query.message.chat.id, query.message.message_id)
+        break
+    }
+  })
+
   TelBot.onText(/\/replykeyboard/, msg => {
     TelBot.sendMessage(msg.chat.id, 'choose', {
       reply_markup: {
