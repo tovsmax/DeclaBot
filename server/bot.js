@@ -34,7 +34,14 @@ export default function createBot(pageUrl) {
 
 
   TelBot.onText(/\/start/, msg => {
-    TelBot.sendMessage('Данный бот имеет следующие команды:')
+    TelBot.getMyCommands().then(commands => {
+      let commandsStr = ''
+      for (const command of commands) {
+        commandsStr += `\n/${command.command} - ${command.description}`
+      }
+      TelBot.sendMessage(msg.chat.id, `Данный бот имеет следующие команды:${commandsStr}`)
+
+    })
     if (fsmBot.checkState('none')) {
       fsmBot.start(msg.chat.id)
     }
@@ -90,6 +97,7 @@ export default function createBot(pageUrl) {
               [
                 {
                   text: 'Авторизоваться',
+                  callback_data: 'authotization',
                   url: 'https://declabot.loca.lt/mockAuth.html'
                 },
                 {
@@ -194,6 +202,12 @@ export default function createBot(pageUrl) {
   })
 
   TelBot.on('message', msg => {
+    const user = msg.from.first_name || msg.from.username || msg.from.id
+    const content = msg.text || msg.photo.toString() || msg.document.file_name
+    console.log(`[${user}]: ${content}`)
+  })
+
+  TelBot.on('message', msg => {
     if (fsmBot.checkState('none')) {
       fsmBot.silentStart()
     }
@@ -227,12 +241,6 @@ export default function createBot(pageUrl) {
         chat_id: query.message.chat.id,
         message_id: query.message.message_id
       })
-      // TelBot.editMessageReplyMarkup(null, {
-      //   chat_id: query.message.chat.id,
-      //   message_id: query.message.message_id
-      // })
     }
   })
-
-  // TelBot.on('')
 }

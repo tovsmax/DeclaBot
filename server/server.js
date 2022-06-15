@@ -23,11 +23,15 @@ const allowedOrigins = [
 
 corsAllowOrigin(ser, allowedOrigins)
 
-const __dirname = path.resolve()
-ser.use("/", express.static(path.resolve(__dirname, "client")))
+ser.use((req, res, next) => {
+  console.log(req.method, req.url)
+  next()
+})
+
+ser.use("/", express.static(path.resolve("client")))
 
 const swaggerFile = JSON.parse(
-  readFileSync(path.resolve(__dirname, "swagger", "output.json"))
+  readFileSync(path.resolve("swagger", "output.json"))
 )
 ser.use("/api-doc", swaggerUi.serve, swaggerUi.setup(swaggerFile))
 
