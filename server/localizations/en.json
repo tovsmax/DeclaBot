@@ -1,0 +1,36 @@
+{
+  "nogroup": {
+    "echo": "You typed \"%messageText%\""
+  },
+  "commandDecriptions": {
+    "commands": "This bot has the following commands:",
+    "start": "Chat registration for bot",
+    "setup": "Bot setup for ",
+    "replykeyboard": "test reply keyborad",
+    "editmsgtest": "test edit msg"
+  },
+  "mainMenuMessages": {
+    "menu": "Menu",
+    "connectCloudStorage": "Choose a storage to dealt with",
+    "GoogleDrive": "Press button to authorize",
+    "OneDrive": "Press button to authorize"
+  },
+  "mainMenuOptions": {
+    "connectCloudStorage": "Connect cloud storage",
+    "GoogleDrive": "Google Drive",
+    "OneDrive": "Microsoft OneDrive",
+    "authorization": "Authorize",
+    "menu": "Return to menu",
+    "close": "Close menu",
+    "back": "Back"
+  },
+  "saveFileMessages": {
+    "ask": "Do you Want save file?",
+    "savePhoto": "Saved",
+    "danyPhoto": "Denied"
+  },
+  "saveFileOptions": {
+    "savePhoto": "Save",
+    "denyPhoto": "Deny"
+  }
+}

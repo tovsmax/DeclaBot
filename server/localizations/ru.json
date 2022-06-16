@@ -1,0 +1,32 @@
+{
+  "nogroup": {
+    "echo": "Вы написали \"%messageText%\""
+  },
+  "commandDecriptions": {
+    "commands": "Данный бот имеет следующие команды:",
+    "start": "Регистрация чата для бота",
+    "setup": "Настройка бота для работы с облаком"
+  },
+  "mainMenuMessages": {
+    "menu": "Меню",
+    "connectCloudStorage": "Какое хранилище хотите подключить?",
+    "GoogleDrive": "Нажмите на кнопку для авторизации",
+    "OneDrive": "Нажмите на кнопку для авторизации"
+  },
+  "mainMenuOptions": {
+    "menu": "Вернуться к меню",
+    "connectCloudStorage": "Подключение облачного хранилища",
+    "authorization": "Авторизоваться",
+    "close": "Закрыть меню",
+    "back": "Назад"
+  },
+  "saveFileMessages": {
+    "ask": "Хотите сохранить файл?",
+    "savePhoto": "Сохранено",
+    "danyPhoto": "Охрана, отмена"
+  },
+  "saveFileOptions": {
+    "savePhoto": "Сохранить",
+    "denyPhoto": "Отменить"
+  }
+}
