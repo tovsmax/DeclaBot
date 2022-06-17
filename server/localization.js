@@ -7,7 +7,7 @@ const ruLocaleFile = readFileSync(resolve('server', 'localizations', 'ru.json'))
 /** @type {Object.<string, Locale>} */
 const localizations = {
   en: JSON.parse(enLocaleFile),
-  ru: JSON.parse(ruLocaleFile)
+  ru: JSON.parse(ruLocaleFile),
 }
 
 let defaultLocale = 'en'
@@ -18,8 +18,8 @@ let defaultLocale = 'en'
 let curLocale = 'userLocale'
 
 /**
- * 
- * @param {('userLocale'|LanguageCode)} newLocale 
+ *
+ * @param {('userLocale'|LanguageCode)} newLocale
  */
 function setCurrentLocale(newLocale) {
   curLocale = newLocale
@@ -30,23 +30,23 @@ function getCurrentLocale() {
 }
 
 /**
- * 
- * @param {LanguageCode} curUserLocale 
- * @param {string} group 
- * @param {string} textId 
- * @returns 
+ *
+ * @param {LanguageCode} curUserLocale
+ * @param {string} group
+ * @param {string} textId
+ * @returns
  */
 function getString(curUserLocale = null, group, textId) {
-  const locale = 
-    (curUserLocale === null)
-    ? localizations[defaultLocale]
-    : (curLocale === 'userLocale')
-    ? localizations[curUserLocale]
-    : localizations[curLocale]
+  const locale =
+    curUserLocale === null
+      ? localizations[defaultLocale]
+      : curLocale === 'userLocale'
+      ? localizations[curUserLocale]
+      : localizations[curLocale]
 
   /** @type {string} */
-  const text = locale[group][textId] 
-    || localizations[defaultLocale][group][textId]
+  const text =
+    locale[group][textId] || localizations[defaultLocale][group][textId]
   return text
 }
 

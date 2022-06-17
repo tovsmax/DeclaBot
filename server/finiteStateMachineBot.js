@@ -1,4 +1,4 @@
-import TelegramBot from "node-telegram-bot-api";
+import TelegramBot from 'node-telegram-bot-api'
 
 /** @typedef {('none'|'pendingFile'|'pendingAnswer')} State */
 
@@ -7,19 +7,19 @@ import TelegramBot from "node-telegram-bot-api";
  */
 export default class FiniteStateMachineBot {
   /**
-   * 
-   * @param {TelegramBot} TelBot 
+   *
+   * @param {TelegramBot} TelBot
    */
   constructor(TelBot) {
     /** @type {State} */
-    this.curState = "none"
+    this.curState = 'none'
     this.saveFileId = null
     this.TelBot = TelBot
   }
 
   /**
    * Проверить, соответствует ли переданное состояние текущему состоянию бота
-   * @param {State} state 
+   * @param {State} state
    */
   checkState(state) {
     if (this.curState === state) {
@@ -29,50 +29,50 @@ export default class FiniteStateMachineBot {
   }
 
   /**
-   * 
-   * @param {Number} chatId 
+   *
+   * @param {Number} chatId
    */
   start(chatId) {
-    this.curState = "pendingFile"
-    this.TelBot.sendMessage(chatId, "Жду файла")
+    this.curState = 'pendingFile'
+    this.TelBot.sendMessage(chatId, 'Жду файла')
   }
 
   silentStart() {
-    this.curState = "pendingFile"
+    this.curState = 'pendingFile'
   }
 
   /**
-   * 
+   *
    * @param {Number} chatId
-   * @param {String} fileId 
+   * @param {String} fileId
    */
   ask(chatId, fileId) {
     this.saveFileId = fileId
-    
-    this.TelBot.sendMessage(chatId, "Хотите сохранить файл?", {
+
+    this.TelBot.sendMessage(chatId, 'Хотите сохранить файл?', {
       reply_markup: {
         inline_keyboard: [
           [
             {
               text: 'Сохранить',
-              callback_data: 'saveFile'
+              callback_data: 'saveFile',
             },
             {
               text: 'Отменить',
-              callback_data: 'denyFile'
-            }
-          ]
-        ]
-      }
+              callback_data: 'denyFile',
+            },
+          ],
+        ],
+      },
     })
 
-    this.curState = "pendingAnswer"
+    this.curState = 'pendingAnswer'
   }
 
   /**
-   * 
+   *
    * @param {Number} chatId
-   * @param {'saveFile'|'denyFile'} answer 
+   * @param {'saveFile'|'denyFile'} answer
    */
   saveFile(chatId, answer) {
     if (answer == 'saveFile') {
@@ -85,6 +85,6 @@ export default class FiniteStateMachineBot {
     }
 
     this.saveFileId = null
-    this.curState = "pendingFile"
+    this.curState = 'pendingFile'
   }
 }
