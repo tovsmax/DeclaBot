@@ -1,7 +1,10 @@
 import axios from 'axios'
 import TelegramBot from 'node-telegram-bot-api'
+import jsonpath from 'jsonpath'
 import FiniteStateMachineBot from './finiteStateMachineBot.js'
-import { getCurrentLocale, getString } from './localization.js'
+import { getString } from './localization.js'
+
+const BOT_TOKEN = process.env.BOT_TOKEN
 
 /**
  *
@@ -33,7 +36,6 @@ function createMyCommands(lang) {
 }
 
 export default function createBot(pageUrl) {
-  const BOT_TOKEN = process.env.BOT_TOKEN
   const TelBot = new TelegramBot(BOT_TOKEN, { polling: true })
   const fsmBot = new FiniteStateMachineBot(TelBot)
 
@@ -52,7 +54,6 @@ export default function createBot(pageUrl) {
 
   TelBot.onText(/\/start/, (msg) => {
     const lang = msg.from.language_code
-    console.log(lang)
     axios
       .post(`https://api.telegram.org/bot${BOT_TOKEN}/getMyCommands`, {
         language_code: lang,
@@ -74,28 +75,127 @@ export default function createBot(pageUrl) {
   })
 
   TelBot.onText(/\/botsettings/, (msg) => {
-    const lang = msg.from.language_code
-    TelBot.sendMessage(
-      msg.chat.id,
-      getString(lang, 'mainMenuMessages', 'menu'),
-      {
-        reply_markup: {
-          inline_keyboard: [
-            [
-              {
-                text: getString(lang, 'mainMenuOptions', 'connectCloudStorage'),
-                callback_data: 'menu.connectCloudStorage',
-              },
-              {
-                text: getString(lang, 'mainMenuOptions', 'close'),
-                callback_data: 'menu.close',
-              },
-            ],
-          ],
-        },
-      }
-    )
+    botsettings(msg.chat.id, msg.from.language_code)
   })
+
+  /**
+   *
+   * @param {number} chatId
+   * @param {import('./localization.js').LanguageCode} lang
+   */
+  function botsettings(chatId, lang) {
+    createMenu(chatId, lang, 'mainMenu')
+  }
+
+  /**
+   * @typedef {Object} Menu
+   * @prop {string} name
+   * @prop {Menu[]} [options]
+   * @prop {Object} [params]
+   * @prop {string} [params.url]
+   * @prop {string} [params.webapp]
+   * @prop {function} [params.action]
+   */
+
+  /**
+   * @typedef {Menu|{text: string, menuOption: string}} Option
+   */
+
+  /**
+   *
+   * @param {number} chatId
+   * @param {string} lang
+   * @param {string} menuName
+   */
+  function createMenu(chatId, lang, menuName) {
+    /** @type {Option[]} */
+    const options = menuGroups[menuName].options
+    for (const option of options) {
+      option.text = getString(lang, `${menuName}Options`, option.name)
+      option.menuOption = 'menu.connectCloudStorage' // `${menuName}/${option.name}`
+    }
+
+    /** @type {ButtomButton[]} */
+    const buttomButtons = [
+      {
+        buttonText: getString(lang, `${menuName}Options`, 'close'),
+        destination: 'menu.close', // `${menuName}/close`
+      },
+    ]
+
+    const menuText = 'New ' + getString(lang, `${menuName}Messages`, menuGroups[menuName].name)
+    const inlineKeyboard = createInlineKeyboard(
+      options,
+      buttomButtons
+    )
+    TelBot.sendMessage(chatId, menuText, {
+      reply_markup: {
+        inline_keyboard: inlineKeyboard,
+      }
+    })
+  }
+
+  /**
+   *
+   * @param {string} menuOption - a string contains pattern `<menuGroupName>/<option>`, where
+   * - `menuGroupName` - is a name of a whole menu group
+   * - `option` - is a name of option located somewhere in menu `menuGroupName`
+   */
+  function fireMenuOption(menuOption) {
+    const [menuGroupName, optionName] = menuOption.split('/')
+    /** @type {Menu} */
+    const option = jsonpath.query(
+      menuGroups[menuGroupName],
+      `$..*[?(@.name=="${optionName}")]`
+    )[0]
+  }
+
+  function closeMenu(chatId, messageId) {
+    TelBot.deleteMessage(chatId, messageId)
+  }
+
+  /**
+   * @typedef {Object} ButtomButton
+   * @prop {string} buttonText
+   * @prop {string} destination - option name to go
+   */
+
+  /**
+   * @param {Option[]} options
+   * @param {ButtomButton[]} buttomButtons - a row of additional options
+   */
+  function createInlineKeyboard(options, buttomButtons) {
+    const inlineKeyboardRows = []
+    for (const option of options) {
+      /** @type {import('node-telegram-bot-api').InlineKeyboardButton} */
+      const button = {
+        text: option.text,
+        callback_data: option.options ? option.menuOption : undefined,
+      }
+
+      const params = option.params
+      if (params) {
+        for (const param of Object.keys(params)) {
+          button[param] = params[param]
+        }
+      }
+
+      inlineKeyboardRows.push([button])
+    }
+
+    const buttomButtonCol = []
+    for (const buttomButton of buttomButtons) {
+      /** @type {import('node-telegram-bot-api').InlineKeyboardButton} */
+      const button = {
+        text: buttomButton.buttonText,
+        callback_data: buttomButton.destination,
+      }
+      buttomButtonCol.push(button)
+    }
+    inlineKeyboardRows.push(buttomButtonCol)
+
+    return inlineKeyboardRows
+  }
 
   TelBot.on('callback_query', (query) => {
     const lang = query.from.language_code
@@ -168,7 +268,7 @@ export default function createBot(pageUrl) {
         })
         break
       case 'menu':
-        TelBot.editMessageText(getString(lang, 'mainMenuMessages', 'menu'), {
+        TelBot.editMessageText('Old ' + getString(lang, 'mainMenuMessages', 'menu'), {
           chat_id: query.message.chat.id,
           message_id: query.message.message_id,
           reply_markup: {
@@ -192,10 +292,51 @@ export default function createBot(pageUrl) {
         })
         break
       case 'menu.close':
-        TelBot.deleteMessage(query.message.chat.id, query.message.message_id)
+        closeMenu(query.message.chat.id, query.message.message_id)
         break
     }
   })
+
+  /**
+   * @type {Object.<string, Menu>}
+   */
+  const menuGroups = {
+    mainMenu: {
+      name: 'menu',
+      options: [
+        {
+          name: 'connectCloudStorage',
+          options: [
+            {
+              name: 'GoogleDrive',
+              options: [
+                {
+                  name: 'GAuth',
+                  params: {
+                    url: 'https://declabot.loca.lt/mockAuth.html',
+                  },
+                },
+              ],
+            },
+            {
+              name: 'OneDrive',
+              options: [
+                {
+                  name: 'MAuth',
+                },
+              ]
+            },
+          ],
+        },
+      ],
+    },
+  }
+
+  // const buttomButtons = [
+  //   {
+  //     name: ''
+  //   }
+  // ]
 
   TelBot.onText(/\/replykeyboard/, (msg) => {
     TelBot.sendMessage(msg.chat.id, 'choose', {
@@ -244,7 +385,7 @@ export default function createBot(pageUrl) {
   })
 
   TelBot.on('message', (msg) => {
-    const user = msg.from.first_name || msg.from.username || msg.from.id
+    const user = `${msg.from.first_name}@${msg.from.username}#${msg.from.id}`
     const content = msg.text || msg.photo.toString() || msg.document.file_name
     console.log(`[${user}]: ${content}`)
   })
