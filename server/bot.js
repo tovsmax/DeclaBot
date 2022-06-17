@@ -1,63 +1,89 @@
 import axios from "axios";
 import TelegramBot from "node-telegram-bot-api";
 import FiniteStateMachineBot from "./finiteStateMachineBot.js";
+import { getCurrentLocale, getString } from "./localization.js";
+
+/**
+ * 
+ * @param {import("./localization.js").LanguageCode} lang 
+ * @returns 
+ */
+function createMyCommands(lang) {
+  axios.post(`https://api.telegram.org/bot${BOT_TOKEN}/setMyCommands`, {
+    language_code: lang,
+    commands: [
+      {
+        command: '/start',
+        description: getString(lang, 'commandDecriptions', 'start')
+      },
+      {
+        command: '/setup',
+        description: getString(lang, 'commandDecriptions', 'setup')
+      },
+      {
+        command: '/replykeyboard',
+        description: getString(lang, 'commandDecriptions', 'replykeyboard')
+      },
+      {
+        command: '/editmsgtest',
+        description: getString(lang, 'commandDecriptions', 'editmsgtest')
+      }
+    ]
+  })
+
+}
 
 export default function createBot(pageUrl) {
   const BOT_TOKEN = process.env.BOT_TOKEN
   const TelBot = new TelegramBot(BOT_TOKEN, {polling: true})
   const fsmBot = new FiniteStateMachineBot(TelBot)
 
-  axios.post(`https://api.telegram.org/bot${BOT_TOKEN}/setMyCommands`, {
-    commands: [
-      {
-        command: '/start',
-        description: 'Регистрация чата для бота'
-      },
-      {
-        command: '/setup',
-        description: 'Настройка бота для работы с облаком'
-      },
-      {
-        command: '/replykeyboard',
-        description: 'test reply keyborad'
-      },
-      {
-        command: '/editmsgtest',
-        description: 'test edit msg'
-      }
-    ]
-  })
+  createMyCommands('en')
+  createMyCommands('ru')
 
   TelBot.onText(/^(?!\/).+/, msg => {
-    TelBot.sendMessage(msg.chat.id, `Вы написали "${msg.text}"`)
+    TelBot.sendMessage(
+      msg.chat.id, 
+      getString(
+        msg.from.language_code, 
+        'nogroup', 
+        'echo'
+      ).replace('%messageText%', msg.text)
+    )
   })
 
-
   TelBot.onText(/\/start/, msg => {
-    TelBot.getMyCommands().then(commands => {
-      let commandsStr = ''
-      for (const command of commands) {
-        commandsStr += `\n/${command.command} - ${command.description}`
-      }
-      TelBot.sendMessage(msg.chat.id, `Данный бот имеет следующие команды:${commandsStr}`)
-
+    const lang = msg.from.language_code
+    console.log(lang);
+    axios.post(`https://api.telegram.org/bot${BOT_TOKEN}/getMyCommands`, {
+      language_code: lang
     })
+      .then((res) => {
+        const commands = res.data.result
+        let commandsStr = ''
+        for (const command of commands) {
+          commandsStr += `\n/${command.command} - ${command.description}`
+        }
+        TelBot.sendMessage(msg.chat.id, getString(lang, 'commandDecriptions', 'commands') + commandsStr)
+
+      })
     if (fsmBot.checkState('none')) {
       fsmBot.start(msg.chat.id)
     }
   })
 
   TelBot.onText(/\/setup/, msg => {
-    TelBot.sendMessage(msg.chat.id, 'Меню', {
+    const lang = msg.from.language_code
+    TelBot.sendMessage(msg.chat.id, getString(lang, 'mainMenuMessages', 'menu'), {
       reply_markup: {
         inline_keyboard: [
           [
             {
-              text: 'Подключение облачного хранилища',
+              text: getString(lang, 'mainMenuOptions', 'connectCloudStorage'),
               callback_data: 'menu.connectCloudStorage'
             },
             {
-              text: 'Закрыть меню',
+              text: getString(lang, 'mainMenuOptions', 'close'),
               callback_data: 'menu.close'
             }
           ]
@@ -67,20 +93,21 @@ export default function createBot(pageUrl) {
   })
 
   TelBot.on('callback_query', query => {
+    const lang = query.from.language_code
     switch (query.data) {
       case 'menu.connectCloudStorage':
-        TelBot.editMessageText('Какое хранилище хотите подключить?', {
+        TelBot.editMessageText(getString(lang, "mainMenuMessages", "connectCloudStorage"), {
           chat_id: query.message.chat.id,
           message_id: query.message.message_id,
           reply_markup: {
             inline_keyboard: [
               [
                 {
-                  text: 'Google Drive',
+                  text: getString(lang, 'mainMenuOptions', 'GoogleDrive'),
                   callback_data: 'connectCloudStorage.GoogleDrive'
                 },
                 {
-                  text: 'Microsoft OneDrive',
+                  text: getString(lang, 'mainMenuOptions', 'OneDrive'),
                   callback_data: 'connectCloudStorage.OneDrive'
                 }
               ]
@@ -89,19 +116,19 @@ export default function createBot(pageUrl) {
         })
         break
       case 'connectCloudStorage.GoogleDrive':
-        TelBot.editMessageText('Нажмите на кнопку для авторизации', {
+        TelBot.editMessageText(getString(lang, 'mainMenuMessages', 'GoogleDrive'), {
           chat_id: query.message.chat.id,
           message_id: query.message.message_id,
           reply_markup: {
             inline_keyboard: [
               [
                 {
-                  text: 'Авторизоваться',
-                  callback_data: 'authotization',
+                  text: getString(lang, 'mainMenuOptions', 'authorization'),
+                  callback_data: 'authorization',
                   url: 'https://declabot.loca.lt/mockAuth.html'
                 },
                 {
-                  text: 'Вернуться к меню',
+                  text: getString(lang, 'mainMenuOptions', 'menu'),
                   callback_data: 'menu'
                 }
               ]
@@ -110,18 +137,18 @@ export default function createBot(pageUrl) {
         })
         break
       case 'connectCloudStorage.OneDrive':
-        TelBot.editMessageText('Нажмите на кнопку для авторизации', {
+        TelBot.editMessageText(getString(lang, 'mainMenuOptions', 'OneDrive'), {
           chat_id: query.message.chat.id,
           message_id: query.message.message_id,
           reply_markup: {
             inline_keyboard: [
               [
                 {
-                  text: 'Авторизоваться',
+                  text: getString(lang, 'mainMenuOptions', 'authorization'),
                   url: 'https://declabot.loca.lt/mockAuth.html'
                 },
                 {
-                  text: 'Вернуться к меню',
+                  text: getString(lang, 'mainMenuOptions', 'menu'),
                   callback_data: 'menu'
                 }
               ]
@@ -130,18 +157,18 @@ export default function createBot(pageUrl) {
         })
         break
       case 'menu':
-        TelBot.editMessageText('Меню', {
+        TelBot.editMessageText(getString(lang, 'mainMenuMessages', 'menu'), {
           chat_id: query.message.chat.id,
           message_id: query.message.message_id,
           reply_markup: {
             inline_keyboard: [
               [
                 {
-                  text: 'Подключение облачного хранилища',
+                  text: getString(lang, 'mainMenuOptions', 'connectCloudStorage'),
                   callback_data: 'menu.connectCloudStorage'
                 },
                 {
-                  text: 'Закрыть меню',
+                  text: getString(lang, 'mainMenuOptions', 'close'),
                   callback_data: 'menu.close'
                 }
               ]
@@ -218,7 +245,7 @@ export default function createBot(pageUrl) {
       const queryFileId = 
         (msg.photo && msg.photo[msg.photo.length - 1])
         ? msg.photo[msg.photo.length - 1].file_id
-        : (msg.document)
+        : (msg.document !== undefined)
         ? msg.document.file_id
         : null
       
