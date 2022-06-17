@@ -5,7 +5,7 @@
   "commandDecriptions": {
     "commands": "This bot has the following commands:",
     "start": "Chat registration for bot",
-    "setup": "Bot setup for ",
+    "botsettings": "Bot settings for ",
     "replykeyboard": "test reply keyborad",
     "editmsgtest": "test edit msg"
   },

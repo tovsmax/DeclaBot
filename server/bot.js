@@ -17,8 +17,8 @@ function createMyCommands(lang) {
         description: getString(lang, 'commandDecriptions', 'start'),
       },
       {
-        command: '/setup',
-        description: getString(lang, 'commandDecriptions', 'setup'),
+        command: '/botsettings',
+        description: getString(lang, 'commandDecriptions', 'botsettings'),
       },
       {
         command: '/replykeyboard',
@@ -73,7 +73,7 @@ export default function createBot(pageUrl) {
     }
   })
 
-  TelBot.onText(/\/setup/, (msg) => {
+  TelBot.onText(/\/botsettings/, (msg) => {
     const lang = msg.from.language_code
     TelBot.sendMessage(
       msg.chat.id,
