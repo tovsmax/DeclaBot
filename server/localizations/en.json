@@ -1,16 +1,16 @@
 {
-  "nogroup": {
+  "no_group": {
     "echo": "You typed \"%messageText%\""
   },
-  "commandDecriptions": {
+  "commandDescriptions": {
     "commands": "This bot has the following commands:",
     "start": "Chat registration for bot",
-    "botsettings": "Bot settings for ",
-    "replykeyboard": "test reply keyborad",
-    "editmsgtest": "test edit msg"
+    "bot_settings": "Bot settings for ",
+    "reply_keyboard": "test reply keyborad",
+    "edit_msg_test": "test edit msg"
   },
   "mainMenuMessages": {
-    "menu": "Menu",
+    "mainMenu": "Menu",
     "connectCloudStorage": "Choose a storage to dealt with",
     "GoogleDrive": "Press button to authorize",
     "OneDrive": "Press button to authorize"
@@ -19,8 +19,11 @@
     "connectCloudStorage": "Connect cloud storage",
     "GoogleDrive": "Google Drive",
     "OneDrive": "Microsoft OneDrive",
-    "authorization": "Authorize",
-    "menu": "Return to menu",
+    "GAuth": "Authorize",
+    "MAuth": "Authorize",
+    "mainMenu": "Return to menu"
+  },
+  "bottomButtons": {
     "close": "Close menu",
     "back": "Back"
   },

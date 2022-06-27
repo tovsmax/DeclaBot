@@ -1,6 +1,6 @@
 {
-  "commandDecriptions": {
+  "commandDescriptions": {
     "start": "Реэстрація чату для бота",
-    "botsettings": "Налаштування бота для роботи з хмарами"
+    "bot_settings": "Налаштування бота для роботи з хмарами"
   }
 }

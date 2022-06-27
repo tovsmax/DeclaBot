@@ -3,6 +3,7 @@ import TelegramBot from 'node-telegram-bot-api'
 import jsonpath from 'jsonpath'
 import FiniteStateMachineBot from './finiteStateMachineBot.js'
 import { getString } from './localization.js'
+import { JSONPath } from 'jsonpath-plus'
 
 const BOT_TOKEN = process.env.BOT_TOKEN
 
@@ -17,19 +18,20 @@ function createMyCommands(lang) {
     commands: [
       {
         command: '/start',
-        description: getString(lang, 'commandDecriptions', 'start'),
+        description: getString(lang, 'commandDescriptions', 'start'),
       },
       {
-        command: '/botsettings',
-        description: getString(lang, 'commandDecriptions', 'botsettings'),
+        command: '/bot_settings',
+
+        description: getString(lang, 'commandDescriptions', 'bot_settings'),
       },
       {
-        command: '/replykeyboard',
-        description: getString(lang, 'commandDecriptions', 'replykeyboard'),
+        command: '/reply_keyboard',
+        description: getString(lang, 'commandDescriptions', 'reply_keyboard'),
       },
       {
-        command: '/editmsgtest',
-        description: getString(lang, 'commandDecriptions', 'editmsgtest'),
+        command: '/edit_msg_test',
+        description: getString(lang, 'commandDescriptions', 'edit_msg_test'),
       },
     ],
   })
@@ -45,7 +47,7 @@ export default function createBot(pageUrl) {
   TelBot.onText(/^(?!\/).+/, (msg) => {
     TelBot.sendMessage(
       msg.chat.id,
-      getString(msg.from.language_code, 'nogroup', 'echo').replace(
+      getString(msg.from.language_code, 'no_group', 'echo').replace(
         '%messageText%',
         msg.text
       )
@@ -66,7 +68,7 @@ export default function createBot(pageUrl) {
         }
         TelBot.sendMessage(
           msg.chat.id,
-          getString(lang, 'commandDecriptions', 'commands') + commandsStr
+          getString(lang, 'commandDescriptions', 'commands') + commandsStr
         )
       })
     if (fsmBot.checkState('none')) {
@@ -74,8 +76,8 @@ export default function createBot(pageUrl) {
     }
   })
 
-  TelBot.onText(/\/botsettings/, (msg) => {
-    botsettings(msg.chat.id, msg.from.language_code)
+  TelBot.onText(/\/bot_settings/, (msg) => {
+    bot_settings(msg.chat.id, msg.from.language_code)
   })
 
   /**
@@ -83,7 +85,7 @@ export default function createBot(pageUrl) {
    * @param {number} chatId
    * @param {import('./localization.js').LanguageCode} lang
    */
-  function botsettings(chatId, lang) {
+  function bot_settings(chatId, lang) {
     createMenu(chatId, lang, 'mainMenu')
   }
 
@@ -112,188 +114,164 @@ export default function createBot(pageUrl) {
     const options = menuGroups[menuName].options
     for (const option of options) {
       option.text = getString(lang, `${menuName}Options`, option.name)
-      option.menuOption = 'menu.connectCloudStorage' // `${menuName}/${option.name}`
+      option.menuOption = `${menuName}/${option.name}`
     }
 
-    /** @type {ButtomButton[]} */
-    const buttomButtons = [
+    /** @type {BottomButton[]} */
+    const bottomButtons = [
       {
-        buttonText: getString(lang, `${menuName}Options`, 'close'),
-        destination: 'menu.close', // `${menuName}/close`
+        buttonText: getString(lang, 'bottomButtons', 'close'),
+        destination: 'close'
       },
     ]
 
-    const menuText = 'New ' + getString(lang, `${menuName}Messages`, menuGroups[menuName].name)
-    const inlineKeyboard = createInlineKeyboard(
-      options,
-      buttomButtons
+    const menuText = getString(
+      lang,
+      `${menuName}Messages`,
+      menuGroups[menuName].name
     )
+    const inlineKeyboard = createInlineKeyboard(options, bottomButtons)
     TelBot.sendMessage(chatId, menuText, {
       reply_markup: {
         inline_keyboard: inlineKeyboard,
-      }
+      },
     })
   }
 
   /**
    *
+   * @param {number} chatId
+   * @param {number} messageId
+   * @param {import('./localization.js').LanguageCode} lang
    * @param {string} menuOption - a string contains pattern `<menuGroupName>/<option>`, where
    * - `menuGroupName` - is a name of a whole menu group
    * - `option` - is a name of option located somewhere in menu `menuGroupName`
    */
-  function fireMenuOption(menuOption) {
-    const [menuGroupName, optionName] = menuOption.split('/')
-    /** @type {Menu} */
-    const option = jsonpath.query(
-      menuGroups[menuGroupName],
-      `$..*[?(@.name=="${optionName}")]`
-    )[0]
-  }
+  function fireMenuOption(chatId, messageId, lang, menuOption) {
+    const [menuName, optionName] = menuOption.split('/')
+    const curMenuGroup = menuGroups[menuName]
 
-  function closeMenu(chatId, messageId) {
-    TelBot.deleteMessage(chatId, messageId)
+    // TODO: replace jsonpath to Menu.path
+    /** @type {Menu} */
+    const menu = JSONPath(`$..*[?(@.name=="${optionName}")]`, curMenuGroup)[0] || curMenuGroup
+    /** @type {Menu} */
+    const parent = JSONPath(
+      `$..*[?(@.name=="${optionName}")]^^^`,
+      curMenuGroup
+    )[0]
+
+    const curOptionsGroupString = `${menuName}Options`
+
+    /** @type {Option[]} */
+    const options = menu.options
+    if (options && options.length !== 0) {
+      for (const option of options) {
+        option.text = getString(lang, curOptionsGroupString, option.name)
+        option.menuOption = `${menuName}/${option.name}`
+      }
+    }
+
+    /** @type {BottomButton[]} */
+    const bottomButtons = []
+    if (optionName === curMenuGroup.name) {
+      bottomButtons.push({
+        buttonText: getString(lang, 'bottomButtons', 'close'),
+        destination: `close`,
+      })
+    } else {
+      bottomButtons.push({
+        buttonText: getString(lang, 'bottomButtons', 'back'),
+        destination: `${menuName}/${parent.name}`,
+      },
+      {
+        buttonText: getString(lang, curOptionsGroupString, curMenuGroup.name),
+        destination: `${menuName}/${curMenuGroup.name}`,
+      })
+    }
+
+    const text = getString(lang, `${menuName}Messages`, menu.name)
+    const inlineKeyboard = createInlineKeyboard(options, bottomButtons)
+    TelBot.editMessageText(text, {
+      chat_id: chatId,
+      message_id: messageId,
+      reply_markup: {
+        inline_keyboard: inlineKeyboard,
+      },
+    })
   }
 
   /**
-   * @typedef {Object} ButtomButton
+   *
+   * @param {import('node-telegram-bot-api').CallbackQuery} query
+   */
+  function closeMenu(query) {
+    TelBot.deleteMessage(query.message.chat.id, query.message.message_id)
+  }
+
+  /**
+   * @typedef {Object} BottomButton
    * @prop {string} buttonText
    * @prop {string} destination - option name to go
    */
 
   /**
-   * @param {Option[]} options
-   * @param {ButtomButton[]} buttomButtons - a row of additional options
+   * @param {Option[]} [options]
+   * @param {BottomButton[]} bottomButtons - a row of additional options
    */
-  function createInlineKeyboard(options, buttomButtons) {
+  function createInlineKeyboard(options, bottomButtons) {
     const inlineKeyboardRows = []
-    for (const option of options) {
-      /** @type {import('node-telegram-bot-api').InlineKeyboardButton} */
-      const button = {
-        text: option.text,
-        callback_data: option.options ? option.menuOption : undefined,
-      }
 
-      const params = option.params
-      if (params) {
-        for (const param of Object.keys(params)) {
-          button[param] = params[param]
+    if (options) {
+      for (const option of options) {
+        /** @type {import('node-telegram-bot-api').InlineKeyboardButton} */
+        const button = {
+          text: option.text,
         }
-      }
 
-      inlineKeyboardRows.push([button])
+        const params = option.params
+        if (params) {
+          for (const param of Object.keys(params)) {
+            button[param] = params[param]
+          }
+        } else {
+          button.callback_data = option.options ? option.menuOption : 'None'
+        }
+
+        inlineKeyboardRows.push([button])
+      }
     }
 
-    const buttomButtonCol = []
-    for (const buttomButton of buttomButtons) {
+    const bottomButtonCol = []
+    for (const bottomButton of bottomButtons) {
       /** @type {import('node-telegram-bot-api').InlineKeyboardButton} */
       const button = {
-        text: buttomButton.buttonText,
-        callback_data: buttomButton.destination,
+        text: bottomButton.buttonText,
+        callback_data: bottomButton.destination,
       }
-      buttomButtonCol.push(button)
+      bottomButtonCol.push(button)
     }
-    inlineKeyboardRows.push(buttomButtonCol)
+    inlineKeyboardRows.push(bottomButtonCol)
 
     return inlineKeyboardRows
   }
 
   TelBot.on('callback_query', (query) => {
-    const lang = query.from.language_code
-    switch (query.data) {
-      case 'menu.connectCloudStorage':
-        TelBot.editMessageText(
-          getString(lang, 'mainMenuMessages', 'connectCloudStorage'),
-          {
-            chat_id: query.message.chat.id,
-            message_id: query.message.message_id,
-            reply_markup: {
-              inline_keyboard: [
-                [
-                  {
-                    text: getString(lang, 'mainMenuOptions', 'GoogleDrive'),
-                    callback_data: 'connectCloudStorage.GoogleDrive',
-                  },
-                  {
-                    text: getString(lang, 'mainMenuOptions', 'OneDrive'),
-                    callback_data: 'connectCloudStorage.OneDrive',
-                  },
-                ],
-              ],
-            },
-          }
-        )
-        break
-      case 'connectCloudStorage.GoogleDrive':
-        TelBot.editMessageText(
-          getString(lang, 'mainMenuMessages', 'GoogleDrive'),
-          {
-            chat_id: query.message.chat.id,
-            message_id: query.message.message_id,
-            reply_markup: {
-              inline_keyboard: [
-                [
-                  {
-                    text: getString(lang, 'mainMenuOptions', 'authorization'),
-                    callback_data: 'authorization',
-                    url: 'https://declabot.loca.lt/mockAuth.html',
-                  },
-                  {
-                    text: getString(lang, 'mainMenuOptions', 'menu'),
-                    callback_data: 'menu',
-                  },
-                ],
-              ],
-            },
-          }
-        )
-        break
-      case 'connectCloudStorage.OneDrive':
-        TelBot.editMessageText(getString(lang, 'mainMenuOptions', 'OneDrive'), {
-          chat_id: query.message.chat.id,
-          message_id: query.message.message_id,
-          reply_markup: {
-            inline_keyboard: [
-              [
-                {
-                  text: getString(lang, 'mainMenuOptions', 'authorization'),
-                  url: 'https://declabot.loca.lt/mockAuth.html',
-                },
-                {
-                  text: getString(lang, 'mainMenuOptions', 'menu'),
-                  callback_data: 'menu',
-                },
-              ],
-            ],
-          },
-        })
-        break
-      case 'menu':
-        TelBot.editMessageText('Old ' + getString(lang, 'mainMenuMessages', 'menu'), {
-          chat_id: query.message.chat.id,
-          message_id: query.message.message_id,
-          reply_markup: {
-            inline_keyboard: [
-              [
-                {
-                  text: getString(
-                    lang,
-                    'mainMenuOptions',
-                    'connectCloudStorage'
-                  ),
-                  callback_data: 'menu.connectCloudStorage',
-                },
-                {
-                  text: getString(lang, 'mainMenuOptions', 'close'),
-                  callback_data: 'menu.close',
-                },
-              ],
-            ],
-          },
-        })
-        break
-      case 'menu.close':
-        closeMenu(query.message.chat.id, query.message.message_id)
-        break
+    const queryData = query.data
+
+    if (query.data === 'close') {
+      closeMenu(query)
+      return
+    }
+
+    const menuList = Object.keys(menuGroups)
+    const menu = queryData.match(/^\w+/)[0] //TODO: need to rewrite this
+    if (menuList.includes(menu)) {
+      fireMenuOption(
+        query.message.chat.id,
+        query.message.message_id,
+        query.from.language_code,
+        queryData
+      )
     }
   })
 
@@ -302,7 +280,7 @@ export default function createBot(pageUrl) {
    */
   const menuGroups = {
     mainMenu: {
-      name: 'menu',
+      name: 'mainMenu',
       options: [
         {
           name: 'connectCloudStorage',
@@ -324,7 +302,7 @@ export default function createBot(pageUrl) {
                 {
                   name: 'MAuth',
                 },
-              ]
+              ],
             },
           ],
         },
@@ -332,13 +310,13 @@ export default function createBot(pageUrl) {
     },
   }
 
-  // const buttomButtons = [
+  // const bottomButtons = [
   //   {
   //     name: ''
   //   }
   // ]
 
-  TelBot.onText(/\/replykeyboard/, (msg) => {
+  TelBot.onText(/\/reply_keyboard/, (msg) => {
     TelBot.sendMessage(msg.chat.id, 'choose', {
       reply_markup: {
         keyboard: [
@@ -365,7 +343,7 @@ export default function createBot(pageUrl) {
     })
   })
 
-  TelBot.onText(/\/editmsgtest/, (msg) => {
+  TelBot.onText(/\/edit_msg_test/, (msg) => {
     TelBot.sendMessage(msg.chat.id, 'test', {
       reply_markup: {
         inline_keyboard: [
@@ -420,7 +398,7 @@ export default function createBot(pageUrl) {
 
   TelBot.on('callback_query', (query) => {
     if (query.data.includes('test.query')) {
-      TelBot.editMessageText(`"${query.data}" was choosen`, {
+      TelBot.editMessageText(`"${query.data}" was chosen`, {
         chat_id: query.message.chat.id,
         message_id: query.message.message_id,
       })

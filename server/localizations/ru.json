@@ -1,14 +1,14 @@
 {
-  "nogroup": {
+  "no_group": {
     "echo": "Вы написали \"%messageText%\""
   },
-  "commandDecriptions": {
+  "commandDescriptions": {
     "commands": "Данный бот имеет следующие команды:",
     "start": "Регистрация чата для бота",
-    "botsettings": "Настройка бота для работы с облаком"
+    "bot_settings": "Настройка бота для работы с облаком"
   },
   "mainMenuMessages": {
-    "menu": "Меню",
+    "mainMenu": "Меню",
     "connectCloudStorage": "Какое хранилище хотите подключить?",
     "GoogleDrive": "Нажмите на кнопку для авторизации",
     "OneDrive": "Нажмите на кнопку для авторизации"
@@ -16,7 +16,10 @@
   "mainMenuOptions": {
     "menu": "Вернуться к меню",
     "connectCloudStorage": "Подключение облачного хранилища",
-    "authorization": "Авторизоваться",
+    "GAuth": "Авторизоваться",
+    "MAuth": "Авторизоваться"
+  },
+  "bottomButtons": {
     "close": "Закрыть меню",
     "back": "Назад"
   },

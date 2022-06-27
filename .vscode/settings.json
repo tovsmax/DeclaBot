@@ -7,4 +7,10 @@
     "strings": "on"
   },
   "git.autofetch": true,
+  "cSpell.enabled": true,
+  "files.autoSave": "onFocusChange",
+  "cSpell.language": "en,ru-RU,ru,en-GB,en-US",
+  "cSpell.words": [
+    "jsonpath"
+  ],
 }
