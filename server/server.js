@@ -1,8 +1,5 @@
 import express from 'express'
-import localtunnel from 'localtunnel'
-
-import path, { dirname, join, resolve } from 'path'
-import { fileURLToPath } from 'url'
+import path from 'path'
 
 import swaggerUi from 'swagger-ui-express'
 import { readFileSync } from 'fs'
@@ -36,17 +33,10 @@ ser.use('/declarations', declRouter)
 ser.use('/docs', docRouter)
 ser.use('/upload', fileTransRouter)
 
-let tunnel
-let declabot
-const server = ser.listen(port, async () => {
-  tunnel = await localtunnel(port, { subdomain: 'declabot' })
-  tunnel.on('close', () => {
-    tunnel.close()
-  })
-  declabot = createBot(tunnel.url)
+ser.listen(port, async () => {
+  createBot()
 
   console.log(`Server listening on ${port}!`)
   console.log('Http url:', 'http://localhost:3000')
-  console.log('Https redirect:', tunnel.url)
-  console.log('API Documentation:', `${tunnel.url}/api-doc`)
+  console.log('API Documentation:', `http://localhost:3000/api-doc`)
 })
